@@ -1,0 +1,22 @@
+# perception_training
+perception_training/exported_models/*
+!perception_training/exported_models/.gitkeep
+!perception_training/exported_models/README.md
+
+# datasets - never commit raw data
+perception_training/data/
+*.pt
+*.pth
+*.onnx
+*.ckpt
+
+# results
+results/
+
+# python
+__pycache__/
+*.pyc
+.ipynb_checkpoints/
+
+# kaggle working dir artifacts
+.virtual_documents/
