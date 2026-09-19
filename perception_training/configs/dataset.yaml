@@ -1,0 +1,32 @@
+# RELLIS-3D dataset configuration
+# Source: https://huggingface.co/datasets/GAIA-URJC/Rellis3D-20_Original (mirrored to a private Kaggle Dataset)
+# See docs/decisions/0003-rellis-split-strategy.md for why the official (frame-level) split is used.
+
+dataset_name: RELLIS-3D
+kaggle_dataset_slug: aryashekhar13/rellis-3d-offroad-nav-mirror
+
+# Base path when this dataset is attached in a Kaggle notebook
+base_path: /kaggle/input/datasets/aryashekhar13/rellis-3d-offroad-nav-mirror
+
+images_dir: Rellis_3D_pylon_camera_node/Rellis-3D
+labels_dir: Rellis_3D_pylon_camera_node_label_id/Rellis-3D
+ontology_dir: Rellis_3D_ontology/Rellis_3D_ontology
+split_dir: Rellis_3D_image_split
+
+split_files:
+  train: train.lst
+  val: val.lst
+  test: test.lst
+
+image_subdir: pylon_camera_node
+label_subdir: pylon_camera_node_label_id
+
+sequences:
+  - "00000"
+  - "00001"
+  - "00002"
+  - "00003"
+  - "00004"
+
+num_classes: 20
+ignore_index: 0  # 'void' class, per ontology.yaml
