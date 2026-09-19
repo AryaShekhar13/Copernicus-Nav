@@ -41,9 +41,12 @@ def train(dataset_config_path, classes_config_path, training_config_path, device
     criterion = nn.CrossEntropyLoss(ignore_index=0)
 
     ckpt_path = os.path.join(cfg["checkpoint_dir"], cfg["checkpoint_filename"])
+    best_ckpt_path = os.path.join(cfg["checkpoint_dir"], cfg["best_checkpoint_filename"])
+    patience = cfg.get("early_stopping_patience")
     start_epoch = 0
     global_step = 0
     best_val_loss = float("inf")
+    epochs_since_improvement = 0
 
     if os.path.exists(ckpt_path):
         print(f"Resuming from checkpoint: {ckpt_path}")
@@ -87,8 +90,20 @@ def train(dataset_config_path, classes_config_path, training_config_path, device
 
         if avg_val_loss < best_val_loss:
             best_val_loss = avg_val_loss
+            epochs_since_improvement = 0
+            save_checkpoint(best_ckpt_path, model, optimizer, epoch + 1, global_step, best_val_loss)
+            print(f"New best val loss {best_val_loss:.4f} - best checkpoint saved (epoch {epoch + 1})")
+        else:
+            epochs_since_improvement += 1
+            print(f"No improvement for {epochs_since_improvement} epoch(s) "
+                  f"(best remains {best_val_loss:.4f} from an earlier epoch)")
 
         save_checkpoint(ckpt_path, model, optimizer, epoch + 1, global_step, best_val_loss)
         print(f"End-of-epoch checkpoint saved (epoch {epoch + 1})")
+
+        if patience is not None and epochs_since_improvement >= patience:
+            print(f"Early stopping: no improvement for {epochs_since_improvement} epochs "
+                  f"(patience={patience}). Stopping at epoch {epoch + 1}.")
+            break
 
     return model
