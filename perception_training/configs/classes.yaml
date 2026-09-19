@@ -1,0 +1,28 @@
+# classes.yaml - class-index to name mapping for RELLIS-3D, derived from ontology.yaml
+# base_cost is null: assigning costs is a Workstream 2 decision, not perception-training's.
+# hazardous: true marks classes requiring separate reporting per team_division.md.
+num_classes: 20
+ignore_index: 0
+classes:
+  - {index: 0, name: void, color_hex: "#000000", hazardous: false, base_cost: null}
+  - {index: 1, name: dirt, color_hex: "#6c4014", hazardous: false, base_cost: null}
+  - {index: 3, name: grass, color_hex: "#006600", hazardous: false, base_cost: null}
+  - {index: 4, name: tree, color_hex: "#00ff00", hazardous: false, base_cost: null}
+  - {index: 5, name: pole, color_hex: "#009999", hazardous: false, base_cost: null}
+  - {index: 6, name: water, color_hex: "#0080ff", hazardous: true, base_cost: null}
+  - {index: 7, name: sky, color_hex: "#0000ff", hazardous: false, base_cost: null}
+  - {index: 8, name: vehicle, color_hex: "#ffff00", hazardous: false, base_cost: null}
+  - {index: 9, name: object, color_hex: "#ff007f", hazardous: false, base_cost: null}
+  - {index: 10, name: asphalt, color_hex: "#404040", hazardous: false, base_cost: null}
+  - {index: 12, name: building, color_hex: "#ff0000", hazardous: false, base_cost: null}
+  - {index: 15, name: log, color_hex: "#660000", hazardous: false, base_cost: null}
+  - {index: 17, name: person, color_hex: "#cc99ff", hazardous: false, base_cost: null}
+  - {index: 18, name: fence, color_hex: "#6600cc", hazardous: false, base_cost: null}
+  - {index: 19, name: bush, color_hex: "#ff99cc", hazardous: false, base_cost: null}
+  - {index: 23, name: concrete, color_hex: "#aaaaaa", hazardous: false, base_cost: null}
+  - {index: 27, name: barrier, color_hex: "#2979FF", hazardous: false, base_cost: null}
+  - {index: 31, name: puddle, color_hex: "#86ffef", hazardous: true, base_cost: null}
+  - {index: 33, name: mud, color_hex: "#634222", hazardous: true, base_cost: null}
+  - {index: 34, name: rubble, color_hex: "#6e168a", hazardous: true, base_cost: null}
+known_discrepancy:
+  note: "ontology.csv also lists uphill(29) and downhill(30), absent from ontology.yaml and the mask pixel data; excluded here."
