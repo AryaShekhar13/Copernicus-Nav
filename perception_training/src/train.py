@@ -1,6 +1,7 @@
 import os
 import yaml
 import torch
+import numpy as np
 import torch.nn as nn
 from torch.utils.data import DataLoader, Subset
 
@@ -38,7 +39,21 @@ def train(dataset_config_path, classes_config_path, training_config_path, device
 
     model = TerrainSegModel(num_classes=num_classes).to(device)
     optimizer = torch.optim.Adam(model.parameters(), lr=cfg["learning_rate"])
-    criterion = nn.CrossEntropyLoss(ignore_index=0)
+
+    class_weights = None
+    if cfg.get("class_weights_path"):
+        weights_path = os.path.join(os.path.dirname(training_config_path), "..",
+                                     cfg["class_weights_path"]) \
+            if not os.path.isabs(cfg["class_weights_path"]) else cfg["class_weights_path"]
+        weights_path = os.path.normpath(weights_path)
+        if os.path.exists(weights_path):
+            class_weights = torch.tensor(np.load(weights_path), dtype=torch.float32).to(device)
+            print(f"Loaded class weights from {weights_path}")
+        else:
+            print(f"WARNING: class_weights_path set but file not found at {weights_path}; "
+                  f"falling back to unweighted loss")
+
+    criterion = nn.CrossEntropyLoss(ignore_index=0, weight=class_weights)
 
     ckpt_path = os.path.join(cfg["checkpoint_dir"], cfg["checkpoint_filename"])
     best_ckpt_path = os.path.join(cfg["checkpoint_dir"], cfg["best_checkpoint_filename"])
