@@ -12,25 +12,86 @@ from src.export import save_segmentation_with_uncertainty
 
 def load_model_for_inference(checkpoint_path, num_classes=20, device="cpu"):
     checkpoint = torch.load(checkpoint_path, map_location="cpu")
+
     model = TerrainSegModel(num_classes=num_classes)
-    model.load_state_dict(checkpoint["model_state_dict"], strict=True)
+    model.load_state_dict(
+        checkpoint["model_state_dict"],
+        strict=True,
+    )
+
     model.to(device)
     model.eval()
+
     return model
 
 
 @torch.no_grad()
-def predict(model, images, device="cpu", with_uncertainty=False, num_passes=10):
+def predict(
+    model,
+    images,
+    device="cpu",
+    with_uncertainty=False,
+    num_passes=10,
+):
     images = images.to(device)
+
     if not with_uncertainty:
         logits = model(images)
         return logits.argmax(dim=1)
-    mean_probs, entropy = mc_dropout_predict(model, images, num_passes=num_passes)
+
+    mean_probs, entropy = mc_dropout_predict(
+        model,
+        images,
+        num_passes=num_passes,
+    )
+
     pred_masks = mean_probs.argmax(dim=1)
+
     return pred_masks, entropy
 
 
-def run_inference_and_export(model, images, sample_ids, output_dir, device="cpu",
-                              with_uncertainty=True, num_passes=10):
+def run_inference_and_export(
+    model,
+    images,
+    sample_ids,
+    output_dir,
+    device="cpu",
+    with_uncertainty=True,
+    num_passes=10,
+):
     if with_uncertainty:
-        pred_masks, entropy = predict(model, images,
+        pred_masks, entropy = predict(
+            model,
+            images,
+            device=device,
+            with_uncertainty=True,
+            num_passes=num_passes,
+        )
+    else:
+        pred_masks = predict(
+            model,
+            images,
+            device=device,
+            with_uncertainty=False,
+        )
+        entropy = None
+
+    results = []
+
+    for i, sample_id in enumerate(sample_ids):
+        seg_path, unc_path = save_segmentation_with_uncertainty(
+            pred_masks[i],
+            entropy[i] if entropy is not None else None,
+            sample_id,
+            output_dir,
+        )
+
+        results.append(
+            {
+                "sample_id": sample_id,
+                "segmentation_path": seg_path,
+                "uncertainty_path": unc_path,
+            }
+        )
+
+    return results
