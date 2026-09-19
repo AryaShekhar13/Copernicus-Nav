@@ -13,7 +13,7 @@ from src.export import save_segmentation_with_uncertainty
 def load_model_for_inference(checkpoint_path, num_classes=20, device="cpu"):
     checkpoint = torch.load(checkpoint_path, map_location="cpu")
 
-    model = TerrainSegModel(num_classes=num_classes)
+    model = TerrainSegModel(num_classes=num_classes, encoder_weights=None)
     model.load_state_dict(
         checkpoint["model_state_dict"],
         strict=True,
