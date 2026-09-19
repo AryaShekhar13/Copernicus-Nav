@@ -21,14 +21,16 @@ def save_segmentation_with_uncertainty(seg_mask, entropy_map, output_dir, sample
 
     if hasattr(seg_mask, "cpu"):
         seg_mask = seg_mask.cpu().numpy()
-    if hasattr(entropy_map, "cpu"):
+    if entropy_map is not None and hasattr(entropy_map, "cpu"):
         entropy_map = entropy_map.cpu().numpy()
 
     seg_path = os.path.join(output_dir, f"{sample_id}_seg.png")
     Image.fromarray(seg_mask.astype(np.uint8)).save(seg_path)
 
     # entropy is float, not PNG-representable directly -- save as .npy alongside
-    unc_path = os.path.join(output_dir, f"{sample_id}_uncertainty.npy")
-    np.save(unc_path, entropy_map.astype(np.float32))
+    unc_path = None
+    if entropy_map is not None:
+        unc_path = os.path.join(output_dir, f"{sample_id}_uncertainty.npy")
+        np.save(unc_path, entropy_map.astype(np.float32))
 
     return seg_path, unc_path

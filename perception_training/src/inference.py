@@ -76,14 +76,17 @@ def run_inference_and_export(
         )
         entropy = None
 
+    assert len(sample_ids) == pred_masks.shape[0], (
+        f"{len(sample_ids)} sample_ids for batch of {pred_masks.shape[0]}"
+    )
     results = []
 
     for i, sample_id in enumerate(sample_ids):
         seg_path, unc_path = save_segmentation_with_uncertainty(
-            pred_masks[i],
-            entropy[i] if entropy is not None else None,
-            sample_id,
-            output_dir,
+            seg_mask=pred_masks[i],
+            entropy_map=entropy[i] if entropy is not None else None,
+            output_dir=output_dir,
+            sample_id=sample_id,
         )
 
         results.append(
