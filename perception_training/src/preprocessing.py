@@ -32,6 +32,20 @@ def resize_image_and_mask(image, mask, size):
     return image_resized, mask_resized
 
 
+def random_hflip(image, mask, p=0.5):
+    """Randomly flip image+mask horizontally together, train split only.
+
+    Horizontal only - off-road terrain has a real up/down (sky above, ground below),
+    so vertical flip would create physically implausible training samples. This is
+    free regularization on top of the targeted mud/puddle fix: the dataset currently
+    has zero augmentation.
+    """
+    if np.random.random() < p:
+        image = np.ascontiguousarray(image[:, ::-1, :])
+        mask = np.ascontiguousarray(mask[:, ::-1])
+    return image, mask
+
+
 def normalize_image(image, mean=(0.485, 0.456, 0.406), std=(0.229, 0.224, 0.225)):
     """Standard ImageNet normalization, since we'll use an ImageNet-pretrained backbone."""
     image = image.astype(np.float32) / 255.0

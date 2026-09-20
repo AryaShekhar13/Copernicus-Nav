@@ -8,10 +8,12 @@ from torch.utils.data import DataLoader, Subset
 from dataset import RellisDataset
 from model import TerrainSegModel
 from checkpointing import save_checkpoint, load_checkpoint
+from preprocessing import build_class_remap
+from losses import CombinedCEDiceLoss
 
 
 def train(dataset_config_path, classes_config_path, training_config_path, device=None,
-          max_train_samples=None, max_val_samples=None):
+          max_train_samples=None, max_val_samples=None, dice_weight=1.0):
     with open(training_config_path) as f:
         cfg = yaml.safe_load(f)
     with open(classes_config_path) as f:
@@ -53,7 +55,20 @@ def train(dataset_config_path, classes_config_path, training_config_path, device
             print(f"WARNING: class_weights_path set but file not found at {weights_path}; "
                   f"falling back to unweighted loss")
 
-    criterion = nn.CrossEntropyLoss(ignore_index=0, weight=class_weights)
+    # Hazard classes (water/puddle/mud/rubble), mapped to their contiguous (post-remap)
+    # indices, since that's what the model's output channels and mask tensors use.
+    remap, _ = build_class_remap(classes_config_path)
+    hazard_class_ids = [
+        remap[c["index"]] for c in classes_cfg["classes"] if c.get("hazardous")
+    ]
+    print(f"Hazard class ids (contiguous): {hazard_class_ids}")
+
+    criterion = CombinedCEDiceLoss(
+        class_weights=class_weights,
+        hazard_class_ids=hazard_class_ids,
+        ignore_index=0,
+        dice_weight=dice_weight,
+    )
 
     ckpt_path = os.path.join(cfg["checkpoint_dir"], cfg["checkpoint_filename"])
     best_ckpt_path = os.path.join(cfg["checkpoint_dir"], cfg["best_checkpoint_filename"])
@@ -80,28 +95,35 @@ def train(dataset_config_path, classes_config_path, training_config_path, device
 
             optimizer.zero_grad()
             outputs = model(images)
-            loss = criterion(outputs, masks)
+            loss, ce_loss, dice_loss = criterion(outputs, masks)
             loss.backward()
             optimizer.step()
 
             global_step += 1
 
             if global_step % cfg["log_every_n_steps"] == 0:
-                print(f"Epoch {epoch} step {global_step} loss {loss.item():.4f}")
+                print(f"Epoch {epoch} step {global_step} loss {loss.item():.4f} "
+                      f"(ce {ce_loss.item():.4f}, hazard-dice {dice_loss.item():.4f})")
 
             if global_step % cfg["save_every_n_steps"] == 0:
                 save_checkpoint(ckpt_path, model, optimizer, epoch, global_step, best_val_loss)
                 print(f"Checkpoint saved at step {global_step}")
 
         model.eval()
-        val_losses = []
+        val_losses, val_ce_losses, val_dice_losses = [], [], []
         with torch.no_grad():
             for images, masks in val_loader:
                 images, masks = images.to(device), masks.to(device)
                 outputs = model(images)
-                val_losses.append(criterion(outputs, masks).item())
+                loss, ce_loss, dice_loss = criterion(outputs, masks)
+                val_losses.append(loss.item())
+                val_ce_losses.append(ce_loss.item())
+                val_dice_losses.append(dice_loss.item())
         avg_val_loss = sum(val_losses) / len(val_losses) if val_losses else float("nan")
-        print(f"Epoch {epoch} complete. Avg val loss: {avg_val_loss:.4f}")
+        avg_val_ce = sum(val_ce_losses) / len(val_ce_losses) if val_ce_losses else float("nan")
+        avg_val_dice = sum(val_dice_losses) / len(val_dice_losses) if val_dice_losses else float("nan")
+        print(f"Epoch {epoch} complete. Avg val loss: {avg_val_loss:.4f} "
+              f"(ce {avg_val_ce:.4f}, hazard-dice {avg_val_dice:.4f})")
 
         if avg_val_loss < best_val_loss:
             best_val_loss = avg_val_loss
@@ -122,3 +144,29 @@ def train(dataset_config_path, classes_config_path, training_config_path, device
             break
 
     return model
+
+
+if __name__ == "__main__":
+    import argparse
+
+    parser = argparse.ArgumentParser(
+        description="Train TerrainSegModel with weighted CE + hazard Dice loss."
+    )
+    parser.add_argument("--dataset-config", default="../configs/dataset.yaml")
+    parser.add_argument("--classes-config", default="../configs/classes.yaml")
+    parser.add_argument("--training-config", default="../configs/training.yaml")
+    parser.add_argument("--dice-weight", type=float, default=1.0,
+                         help="Weight on the hazard Dice term (0.0 disables it, "
+                              "matching the original CE-only baseline).")
+    parser.add_argument("--max-train-samples", type=int, default=None)
+    parser.add_argument("--max-val-samples", type=int, default=None)
+    args = parser.parse_args()
+
+    train(
+        dataset_config_path=args.dataset_config,
+        classes_config_path=args.classes_config,
+        training_config_path=args.training_config,
+        dice_weight=args.dice_weight,
+        max_train_samples=args.max_train_samples,
+        max_val_samples=args.max_val_samples,
+    )

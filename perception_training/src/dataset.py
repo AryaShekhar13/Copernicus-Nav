@@ -5,7 +5,7 @@ import yaml
 import torch
 from torch.utils.data import Dataset
 
-from preprocessing import build_class_remap, remap_mask, resize_image_and_mask, normalize_image
+from preprocessing import build_class_remap, remap_mask, resize_image_and_mask, normalize_image, random_hflip
 
 
 class RellisDataset(Dataset):
@@ -21,6 +21,7 @@ class RellisDataset(Dataset):
 
     def __init__(self, dataset_config_path, split, classes_config_path=None, training_config_path=None):
         assert split in ("train", "val", "test"), f"invalid split: {split}"
+        self.split = split
         with open(dataset_config_path) as f:
             self.cfg = yaml.safe_load(f)
 
@@ -74,6 +75,10 @@ class RellisDataset(Dataset):
         if self.train_cfg is not None:
             size = tuple(self.train_cfg["input_size"])
             image, mask = resize_image_and_mask(image, mask, size=size)
+
+            if self.split == "train":
+                image, mask = random_hflip(image, mask, p=0.5)
+
             image = normalize_image(
                 image,
                 mean=tuple(self.train_cfg["normalize_mean"]),
