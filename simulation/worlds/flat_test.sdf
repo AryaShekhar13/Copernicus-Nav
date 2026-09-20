@@ -1,0 +1,113 @@
+<?xml version="1.0"?>
+<sdf version="1.9">
+  <world name="flat_test">
+    <physics name="1ms" type="ignored">
+      <max_step_size>0.001</max_step_size>
+      <real_time_factor>1.0</real_time_factor>
+    </physics>
+    <plugin filename="gz-sim-physics-system" name="gz::sim::systems::Physics"/>
+    <plugin filename="gz-sim-user-commands-system" name="gz::sim::systems::UserCommands"/>
+    <plugin filename="gz-sim-scene-broadcaster-system" name="gz::sim::systems::SceneBroadcaster"/>
+
+    <light type="directional" name="sun">
+      <cast_shadows>true</cast_shadows>
+      <pose>0 0 10 0 0 0</pose>
+      <direction>-0.5 0.1 -0.9</direction>
+      <diffuse>0.9 0.9 0.9 1</diffuse>
+    </light>
+
+    <model name="ground">
+      <static>true</static>
+      <link name="link">
+        <collision name="collision">
+          <geometry><plane><normal>0 0 1</normal><size>100 100</size></plane></geometry>
+          <surface><friction><ode><mu>0.8</mu><mu2>0.8</mu2></ode></friction></surface>
+        </collision>
+        <visual name="visual">
+          <geometry><plane><normal>0 0 1</normal><size>100 100</size></plane></geometry>
+          <material><ambient>0.4 0.5 0.3 1</ambient><diffuse>0.4 0.5 0.3 1</diffuse></material>
+        </visual>
+      </link>
+    </model>
+
+    <model name="ugv">
+      <pose>0 0 0.2 0 0 0</pose>
+      <link name="chassis">
+        <inertial>
+          <mass>20</mass>
+          <inertia><ixx>0.667</ixx><iyy>1.733</iyy><izz>2.267</izz><ixy>0</ixy><ixz>0</ixz><iyz>0</iyz></inertia>
+        </inertial>
+        <collision name="collision"><geometry><box><size>1.0 0.6 0.2</size></box></geometry></collision>
+        <visual name="visual">
+          <geometry><box><size>1.0 0.6 0.2</size></box></geometry>
+          <material><ambient>0.8 0.4 0.1 1</ambient><diffuse>0.8 0.4 0.1 1</diffuse></material>
+        </visual>
+      </link>
+
+      <!-- Wheels: r=0.15, width=0.1. Pose roll -90deg so the cylinder axis lies along y. -->
+      <link name="wheel_fl">
+        <pose relative_to="chassis">0.35 0.35 -0.05 -1.5707 0 0</pose>
+        <inertial><mass>2</mass><inertia><ixx>0.0129</ixx><iyy>0.0129</iyy><izz>0.0225</izz><ixy>0</ixy><ixz>0</ixz><iyz>0</iyz></inertia></inertial>
+        <collision name="collision">
+          <geometry><cylinder><radius>0.15</radius><length>0.1</length></cylinder></geometry>
+          <surface><friction><ode><mu>1.0</mu><mu2>0.6</mu2><fdir1>1 0 0</fdir1></ode></friction></surface>
+        </collision>
+        <visual name="visual"><geometry><cylinder><radius>0.15</radius><length>0.1</length></cylinder></geometry>
+          <material><ambient>0.1 0.1 0.1 1</ambient><diffuse>0.1 0.1 0.1 1</diffuse></material></visual>
+      </link>
+      <link name="wheel_rl">
+        <pose relative_to="chassis">-0.35 0.35 -0.05 -1.5707 0 0</pose>
+        <inertial><mass>2</mass><inertia><ixx>0.0129</ixx><iyy>0.0129</iyy><izz>0.0225</izz><ixy>0</ixy><ixz>0</ixz><iyz>0</iyz></inertia></inertial>
+        <collision name="collision">
+          <geometry><cylinder><radius>0.15</radius><length>0.1</length></cylinder></geometry>
+          <surface><friction><ode><mu>1.0</mu><mu2>0.6</mu2><fdir1>1 0 0</fdir1></ode></friction></surface>
+        </collision>
+        <visual name="visual"><geometry><cylinder><radius>0.15</radius><length>0.1</length></cylinder></geometry>
+          <material><ambient>0.1 0.1 0.1 1</ambient><diffuse>0.1 0.1 0.1 1</diffuse></material></visual>
+      </link>
+      <link name="wheel_fr">
+        <pose relative_to="chassis">0.35 -0.35 -0.05 -1.5707 0 0</pose>
+        <inertial><mass>2</mass><inertia><ixx>0.0129</ixx><iyy>0.0129</iyy><izz>0.0225</izz><ixy>0</ixy><ixz>0</ixz><iyz>0</iyz></inertia></inertial>
+        <collision name="collision">
+          <geometry><cylinder><radius>0.15</radius><length>0.1</length></cylinder></geometry>
+          <surface><friction><ode><mu>1.0</mu><mu2>0.6</mu2><fdir1>1 0 0</fdir1></ode></friction></surface>
+        </collision>
+        <visual name="visual"><geometry><cylinder><radius>0.15</radius><length>0.1</length></cylinder></geometry>
+          <material><ambient>0.1 0.1 0.1 1</ambient><diffuse>0.1 0.1 0.1 1</diffuse></material></visual>
+      </link>
+      <link name="wheel_rr">
+        <pose relative_to="chassis">-0.35 -0.35 -0.05 -1.5707 0 0</pose>
+        <inertial><mass>2</mass><inertia><ixx>0.0129</ixx><iyy>0.0129</iyy><izz>0.0225</izz><ixy>0</ixy><ixz>0</ixz><iyz>0</iyz></inertia></inertial>
+        <collision name="collision">
+          <geometry><cylinder><radius>0.15</radius><length>0.1</length></cylinder></geometry>
+          <surface><friction><ode><mu>1.0</mu><mu2>0.6</mu2><fdir1>1 0 0</fdir1></ode></friction></surface>
+        </collision>
+        <visual name="visual"><geometry><cylinder><radius>0.15</radius><length>0.1</length></cylinder></geometry>
+          <material><ambient>0.1 0.1 0.1 1</ambient><diffuse>0.1 0.1 0.1 1</diffuse></material></visual>
+      </link>
+
+      <joint name="joint_fl" type="revolute"><parent>chassis</parent><child>wheel_fl</child>
+        <axis><xyz>0 0 1</xyz><limit><lower>-1e16</lower><upper>1e16</upper></limit></axis></joint>
+      <joint name="joint_rl" type="revolute"><parent>chassis</parent><child>wheel_rl</child>
+        <axis><xyz>0 0 1</xyz><limit><lower>-1e16</lower><upper>1e16</upper></limit></axis></joint>
+      <joint name="joint_fr" type="revolute"><parent>chassis</parent><child>wheel_fr</child>
+        <axis><xyz>0 0 1</xyz><limit><lower>-1e16</lower><upper>1e16</upper></limit></axis></joint>
+      <joint name="joint_rr" type="revolute"><parent>chassis</parent><child>wheel_rr</child>
+        <axis><xyz>0 0 1</xyz><limit><lower>-1e16</lower><upper>1e16</upper></limit></axis></joint>
+
+      <plugin filename="gz-sim-diff-drive-system" name="gz::sim::systems::DiffDrive">
+        <left_joint>joint_fl</left_joint>
+        <left_joint>joint_rl</left_joint>
+        <right_joint>joint_fr</right_joint>
+        <right_joint>joint_rr</right_joint>
+        <wheel_separation>0.7</wheel_separation>
+        <wheel_radius>0.15</wheel_radius>
+        <topic>cmd_vel</topic>
+        <odom_topic>odom</odom_topic>
+        <frame_id>odom</frame_id>
+        <child_frame_id>chassis</child_frame_id>
+        <max_linear_acceleration>2</max_linear_acceleration>
+      </plugin>
+    </model>
+  </world>
+</sdf>
