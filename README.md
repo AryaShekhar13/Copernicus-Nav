@@ -1,4 +1,4 @@
-# Copernicus-Nav
+# Copernicus-Nav 
 
 Completed Image Segmentation for the UGV...
 
