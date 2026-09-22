@@ -6,7 +6,7 @@ Completed Image Segmentation for the UGV...
 
 `segmodel_v1_2026-09-19` — a class-weighted checkpoint (epoch 8) selected for deployment over an unweighted alternative. The unweighted model scored slightly higher on aggregate mIoU, but never detected `person` or `log` at all (IoU 0.0 for both), meaning those obstacles were invisible to any downstream costmap. The weighted model trades a small amount of accuracy on common classes (grass, concrete) for detecting rare, safety-relevant ones.
 
-| Metric | Unweighted | Weighted (deployed) |
+| Metric | Unweighted | Weighted (deployed) | 
 |---|---|---|
 | Overall mIoU | 0.3464 | 0.3310 |
 | Hazardous mIoU | 0.3193 | 0.3079 |
