@@ -2,20 +2,6 @@
 
 Completed Image Segmentation for the UGV...
 
-## Terrain Segmentation Model
-
-`segmodel_v1_2026-09-19` — a class-weighted checkpoint (epoch 8) selected for deployment over an unweighted alternative. The unweighted model scored slightly higher on aggregate mIoU, but never detected `person` or `log` at all (IoU 0.0 for both), meaning those obstacles were invisible to any downstream costmap. The weighted model trades a small amount of accuracy on common classes (grass, concrete) for detecting rare, safety-relevant ones.
-
-| Metric | Unweighted | Weighted (deployed) |
-|---|---|---|
-| Overall mIoU | 0.3464 | 0.3310 |
-| Hazardous mIoU | 0.3193 | 0.3079 |
-| person IoU | 0.0000 | 0.4102 |
-| log IoU | 0.0000 | 0.4108 |
-| puddle recall | 0.4216 | 0.8481 |
-
-Model export: ONNX, opset 17, SHA256 `23910cc4953e093c7d1c1b449f288b00a07934fdb07f4cf599da192de6fb7e0f`. Released as GitHub tag [`v1-segmodel-2026-09-19`](https://github.com/AryaShekhar13/Copernicus-Nav/releases/tag/v1-segmodel-2026-09-19).
-
 ## Example Predictions
 
 Each panel shows: input image, ground truth, model prediction, entropy (uncertainty) heatmap.
