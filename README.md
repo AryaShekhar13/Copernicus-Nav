@@ -67,3 +67,18 @@ Caveat: these are pixel-level catch rates, not spatial. Whether the missed fract
 ECE (15-bin, non-void pixels): 0.0139. The pooled number is flattered by the fact that 71% of pixels fall in the top confidence bin (0.98 confidence, 0.979 accuracy), where calibration is near-perfect. Every mid-confidence bin (0.47 to 0.93) is overconfident by 3 to 6 percentage points. Mild, and not yet acted on; if corrected later, it should be via temperature scaling fit on a validation split, not test.
 
 ![Calibration diagram](docs/images/calibration_diagram.png)
+
+<!-- comparison-2026-09-29:start -->
+## Pretrained-model comparison (2026-09-29)
+
+Branch `pretrained-comparison-2026-09-29`. Compared the shipped TerrainSegModel baseline against SegFormer-B0/B1 on the RELLIS-3D test split with the same recipe.
+
+**Result: keep TerrainSegModel. SegFormer is not adopted.**
+- B1 mIoU is within baseline seed noise (about +1.2 pts vs 1.7-pt seed spread) and fails the water recall gate on both seeds.
+- B1 is about 2x slower on CPU ONNX (333 vs 154-177 ms).
+- Water and mud remain weak for every model (data/eval issue: val has no water pixels). Treat both conservatively in the costmap.
+- Mud-weighted baseline rejected (mud precision 0.18).
+
+Details, per-seed tables, figures and the decision note: `docs/comparison_results_2026-09-29/`.
+Reproduce with `src/train.py --model <name> --seed <n>` then `src/compare_eval.py run` / `table`.
+<!-- comparison-2026-09-29:end -->
