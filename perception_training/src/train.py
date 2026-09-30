@@ -6,7 +6,7 @@ import yaml
 import torch
 import numpy as np
 import torch.nn as nn
-from torch.utils.data import DataLoader, Subset
+from torch.utils.data import ConcatDataset, DataLoader, Subset
 
 from dataset import RellisDataset
 from models_zoo import build_model
@@ -34,7 +34,7 @@ def build_criterion(cfg, training_config_path, device):
 def train(dataset_config_path, classes_config_path, training_config_path, device=None,
           max_train_samples=None, max_val_samples=None,
           model_name="terrainseg", checkpoint_dir=None, seed=None, hf_id=None, dl_encoder=None,
-          num_epochs=None):
+          num_epochs=None, extra_train_ds=None):
     with open(training_config_path) as f:
         cfg = yaml.safe_load(f)
     with open(classes_config_path) as f:
@@ -59,6 +59,10 @@ def train(dataset_config_path, classes_config_path, training_config_path, device
         train_ds = Subset(train_ds, range(min(max_train_samples, len(train_ds))))
     if max_val_samples is not None:
         val_ds = Subset(val_ds, range(min(max_val_samples, len(val_ds))))
+
+    if extra_train_ds is not None:
+        train_ds = ConcatDataset([train_ds, extra_train_ds])
+        print(f"Training on {len(train_ds)} samples ({len(extra_train_ds)} extra)")
 
     train_loader = DataLoader(train_ds, batch_size=cfg["batch_size"], shuffle=True,
                                num_workers=cfg["num_workers"])
